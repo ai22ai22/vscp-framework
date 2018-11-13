@@ -36,13 +36,35 @@ compiler:
 before_install:
     - sudo apt-get update -qq
 
-before_script:
-    - cd vscp
-    - cd test
-    - make cunit
-    - cd CUnit-2.1-3; sudo make install; cd ..
-    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+jobs:
+    include:
     
-script:
-    - make debug
-    - cd bin; ./vscp_test
+        - stage: "Test vscp-framework"
+            before_script:
+                - cd vscp
+                - cd test
+                - make cunit
+                - cd CUnit-2.1-3; sudo make install; cd ..
+                - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+            script: make debug; cd bin; ./vscp_test
+            
+        - stage: "Coverity scan of vscp-framework"
+            env:
+              global:
+               # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+               #   via the "travis encrypt" command using the project repo's public key
+               - secure: "RNPNjc1vH0aeDYJCKBDfLZoDcBus0L+gzLXA4gZ/cE25OdXaJZiqURz2Ff/DPMaccd9mCr7OQmxPI5NRUV4ybbMBeMYTe+xA5g4Uj1BdmjzNvT3zQtXQoXqb66zVx4nHKRa20FImPk1c1097CvufKGdZMKlC/6oRyxYzqDpzWvcL4Ldvjs+sLap2QsAIbgQ1xNlGdkFHv06R3DexvgX5VykXVx2qTT49YWlLK6XosamuXzVrEbeEJU51+BMgb/yy2Vr9AYJ7HWUvDfw0wsJtldVtE8XcO+nDWCXkZs0WUlyNrdLO/RtaxL9johSvq6YQtsmffwqf6AQJqccH4jsU9QTVasSHhwAUNNDL92KC4Pbx7orzmX/s6hF0FZ1iFNvC+cp8C7qFXkCEFx68vwipCsF+hcM/o4GNvAk317fcEshsY1toaOigkSh4sGkodsx3K5c1gFPXoUo400T4/pU0tbEynq8fZas44aVHN01cREDR0FWc1rewVueu2BfZbwJRN6G9LjG4bij/yg+y0qF/MWDRGuYsDZ/eHeQP9weeeuX4Rqu5m5tv1qLe2GIRJ0jD9PE+iSu0PTTMXGewG4cAbO7ehkHyudNIUtuHbvKnO5O4gU0IuSYFVNxbqmaVChEI0YQauV/5MCtoNn3zf8yfpJKVCZsD/ksBizj1WEO4w38="
+
+            before_install:
+              - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+            addons:
+                coverity_scan:
+                    project:
+                        name: "BlueAndi/vscp-framework"
+                        description: "<Your project description here>"
+                    notification_email: web@blue-andi.de
+                    build_command_prepend: "cd ..; make clean"
+                    build_command: "make debug"
+                    branch_pattern: coverity_scan
+                    script: cd bin; ./vscp_test
