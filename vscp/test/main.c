@@ -82,7 +82,7 @@ This module contains the main entry point.
  */
 int main(int argc, char* argv[])
 {
-    int result = 0;
+    int result = 0; /* Test result */
     
     if (CUE_SUCCESS != CU_initialize_registry())
     {
