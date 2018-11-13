@@ -66,7 +66,7 @@
 #define VSCP_TEST_PS_SIZE                       VSCP_PS_ADDR_NEXT
 
 /** Number of tx message buffers */
-#define VSCP_TEST_TX_MSG_NUM                    10
+#define VSCP_TEST_TX_MSG_NUM                    20
 
 /** Node nickname id for tests */
 #define VSCP_TEST_NICKNAME                      (0x5A)
